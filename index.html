@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NEO-BOT · Robot animado neón controlado con Prolog</title>
+  <meta name="description" content="NEO-BOT es un robot animado de estilo neón cuyas instrucciones están escritas en Prolog: reconoce cada comando mediante hechos y reglas y ejecuta el movimiento correspondiente." />
+  <meta name="theme-color" content="#06010f" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="bg-fx" aria-hidden="true"></div>
+
+  <header class="top">
+    <div class="brand">
+      <svg class="brand-logo" viewBox="0 0 48 48" aria-hidden="true">
+        <rect x="9" y="14" width="30" height="24" rx="8" />
+        <circle cx="19" cy="26" r="3.2" class="fill" />
+        <circle cx="29" cy="26" r="3.2" class="fill" />
+        <line x1="24" y1="14" x2="24" y2="6" />
+        <circle cx="24" cy="5" r="2.4" class="fill m" />
+      </svg>
+      <div>
+        <h1>NEO<span>-BOT</span></h1>
+        <p>Robot neón controlado por <strong>Prolog</strong></p>
+      </div>
+    </div>
+    <div class="badges">
+      <span class="badge" id="badge-engine"><i class="dot"></i><span id="engine-text">Cargando Prolog…</span></span>
+      <a class="badge link" href="prolog/robot.pl" target="_blank" rel="noopener">robot.pl</a>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- ================= COLUMNA IZQUIERDA ================= -->
+    <section class="col">
+      <article class="card stage-card" aria-labelledby="stage-title">
+        <h2 id="stage-title" class="sr-only">Escenario del robot</h2>
+
+        <div class="hud" id="hud">
+          <div class="hud-item">
+            <span class="hud-label">Motor</span>
+            <span class="hud-value"><i class="led" id="hud-led"></i><b id="hud-motor">apagado</b></span>
+          </div>
+          <div class="hud-item">
+            <span class="hud-label">Posición</span>
+            <span class="hud-value mono"><b id="hud-pos">X4 · Y2</b></span>
+          </div>
+          <div class="hud-item hud-battery">
+            <span class="hud-label">Batería <b id="hud-bat-num" class="mono">100%</b></span>
+            <div class="bar"><div class="bar-fill" id="hud-bat"></div></div>
+          </div>
+          <div class="hud-item">
+            <span class="hud-label">Color</span>
+            <span class="hud-value"><i class="swatch" id="hud-swatch"></i><b id="hud-color">cian</b></span>
+          </div>
+        </div>
+
+        <div class="stage" id="stage">
+          <svg id="stage-svg" viewBox="0 0 900 520" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Escenario neón con el robot NEO-BOT">
+            <defs>
+              <linearGradient id="g-sky" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#07001a" />
+                <stop offset=".55" stop-color="#2a0a52" />
+                <stop offset="1" stop-color="#8a1b8f" />
+              </linearGradient>
+              <linearGradient id="g-sun" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#ffe600" />
+                <stop offset=".55" stop-color="#ff7a1a" />
+                <stop offset="1" stop-color="#ff2bd6" />
+              </linearGradient>
+              <linearGradient id="g-floor" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#1a0638" />
+                <stop offset="1" stop-color="#05010f" />
+              </linearGradient>
+              <mask id="m-sun">
+                <rect width="900" height="520" fill="#fff" />
+                <rect x="300" y="203" width="300" height="2" fill="#000" />
+                <rect x="300" y="219" width="300" height="3.5" fill="#000" />
+                <rect x="300" y="233" width="300" height="5.5" fill="#000" />
+                <rect x="300" y="245" width="300" height="8" fill="#000" />
+              </mask>
+              <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+                <feGaussianBlur stdDeviation="3" result="b" />
+                <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+              </filter>
+              <filter id="glow-soft" x="-60%" y="-60%" width="220%" height="220%">
+                <feGaussianBlur stdDeviation="7" result="b" />
+                <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+              </filter>
+            </defs>
+
+            <!-- Cielo -->
+            <rect width="900" height="260" fill="url(#g-sky)" />
+            <g id="stars"></g>
+            <circle cx="450" cy="190" r="100" fill="url(#g-sun)" mask="url(#m-sun)" class="sun" />
+            <!-- Montañas wireframe -->
+            <polyline class="mount" points="0,252 70,205 130,236 205,178 280,238 340,214 400,252" />
+            <polyline class="mount" points="500,252 565,210 620,236 700,172 765,226 830,196 900,252" />
+
+            <!-- Suelo -->
+            <polygon id="floor" fill="url(#g-floor)" />
+            <g id="grid" filter="url(#glow)"></g>
+            <line x1="0" y1="252" x2="900" y2="252" class="horizon" filter="url(#glow)" />
+
+            <!-- ROBOT -->
+            <g id="robot" class="robot off">
+              <ellipse class="ring" cx="0" cy="0" rx="50" ry="13" />
+              <g class="bot">
+                <g class="lean">
+                  <g filter="url(#glow)">
+                    <!-- piernas -->
+                    <g class="leg l">
+                      <rect class="shell" x="-25" y="-34" width="17" height="28" rx="6" />
+                      <rect class="shell" x="-30" y="-9" width="25" height="9" rx="4.5" />
+                    </g>
+                    <g class="leg r">
+                      <rect class="shell" x="8" y="-34" width="17" height="28" rx="6" />
+                      <rect class="shell" x="5" y="-9" width="25" height="9" rx="4.5" />
+                    </g>
+                    <!-- brazos -->
+                    <g class="arm l">
+                      <rect class="shell" x="-59" y="-102" width="15" height="54" rx="7.5" />
+                      <circle class="shell" cx="-51.5" cy="-45" r="8" />
+                    </g>
+                    <g class="arm r">
+                      <rect class="shell" x="44" y="-102" width="15" height="54" rx="7.5" />
+                      <circle class="shell" cx="51.5" cy="-45" r="8" />
+                    </g>
+                    <!-- torso -->
+                    <rect class="shell" x="-39" y="-112" width="78" height="82" rx="20" />
+                    <circle class="core-ring" cx="0" cy="-76" r="21" />
+                    <circle class="core" cx="0" cy="-76" r="12" />
+                    <rect class="led-bar" x="-22" y="-48" width="11" height="4" rx="2" />
+                    <rect class="led-bar" x="-5.5" y="-48" width="11" height="4" rx="2" />
+                    <rect class="led-bar" x="11" y="-48" width="11" height="4" rx="2" />
+                    <!-- cuello -->
+                    <rect class="shell" x="-9" y="-123" width="18" height="12" rx="3" />
+                    <!-- cabeza -->
+                    <g class="head">
+                      <line class="shell" x1="0" y1="-176" x2="0" y2="-194" />
+                      <circle class="antenna" cx="0" cy="-198" r="6" />
+                      <rect class="shell" x="-44" y="-158" width="8" height="22" rx="3" />
+                      <rect class="shell" x="36" y="-158" width="8" height="22" rx="3" />
+                      <rect class="shell" x="-37" y="-178" width="74" height="56" rx="18" />
+                      <rect class="visor" x="-27" y="-168" width="54" height="30" rx="11" />
+                      <rect class="eye" x="-18" y="-159" width="11" height="13" rx="5" />
+                      <rect class="eye" x="7" y="-159" width="11" height="13" rx="5" />
+                      <path class="mouth" d="M-9 -131 Q0 -125 9 -131" />
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </svg>
+          <div class="toast" id="toast" role="status" aria-live="polite"></div>
+        </div>
+      </article>
+
+      <article class="card console-card" aria-labelledby="console-title">
+        <div class="card-head">
+          <h2 id="console-title"><span class="ico">&gt;_</span> Consola Prolog</h2>
+          <button class="ghost" id="btn-clear-console" type="button">Limpiar</button>
+        </div>
+        <div class="console" id="console" role="log" aria-live="polite"></div>
+        <form class="query" id="query-form" autocomplete="off">
+          <label for="query-input" class="prompt">?-</label>
+          <input id="query-input" type="text" spellcheck="false" placeholder="consulta libre, p. ej.  estado(X,Y,B,M,C).   o   rutina(cuadrado, L)." />
+          <button type="submit" id="btn-query" class="ghost">Consultar</button>
+        </form>
+      </article>
+    </section>
+
+    <!-- ================= COLUMNA DERECHA ================= -->
+    <section class="col">
+      <article class="card" aria-labelledby="prog-title">
+        <div class="card-head">
+          <h2 id="prog-title"><span class="ico">▣</span> Programa del robot</h2>
+          <span class="hint" id="prog-status">listo</span>
+        </div>
+
+        <div class="editor" id="editor">
+          <div class="editor-hl" id="editor-hl" aria-hidden="true"></div>
+          <textarea id="program" spellcheck="false" wrap="off" aria-label="Instrucciones del robot, una por línea"></textarea>
+        </div>
+
+        <div class="controls">
+          <button class="btn primary" id="btn-run" type="button">▶ Ejecutar</button>
+          <button class="btn" id="btn-step" type="button">⏭ Paso</button>
+          <button class="btn danger" id="btn-stop" type="button" disabled>■ Detener</button>
+          <button class="btn" id="btn-reset" type="button">↺ Reiniciar</button>
+        </div>
+
+        <div class="speed">
+          <label for="speed">Velocidad</label>
+          <input type="range" id="speed" min="0.5" max="2.5" step="0.1" value="1" />
+          <output id="speed-out" class="mono">1.0×</output>
+        </div>
+      </article>
+
+      <article class="card" aria-labelledby="cmd-title">
+        <div class="card-head">
+          <h2 id="cmd-title"><span class="ico">⌁</span> Instrucciones</h2>
+          <div class="seg" role="group" aria-label="Modo al pulsar una instrucción">
+            <button type="button" class="seg-btn active" id="mode-run" data-mode="run">Ejecutar ya</button>
+            <button type="button" class="seg-btn" id="mode-add" data-mode="add">Añadir al programa</button>
+          </div>
+        </div>
+        <div id="chips" class="chips"></div>
+        <p class="tip">Atajos de teclado: <kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd> mueven al robot · <kbd>Espacio</kbd> salta.</p>
+      </article>
+
+      <article class="card source-card" aria-labelledby="src-title">
+        <div class="card-head">
+          <h2 id="src-title"><span class="ico">⟨⟩</span> Base de conocimiento <code>robot.pl</code></h2>
+          <span class="hint" id="src-hint">hechos + reglas</span>
+        </div>
+        <div class="source" id="source" tabindex="0" aria-label="Código fuente Prolog del robot"></div>
+      </article>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <p>NEO-BOT · cerebro lógico en <strong>Prolog</strong> ejecutado en el navegador con <a href="https://tau-prolog.org" target="_blank" rel="noopener">Tau Prolog</a>.</p>
+  </footer>
+
+  <script src="js/vendor/tau-prolog-core.js"></script>
+  <script src="js/vendor/tau-prolog-lists.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
